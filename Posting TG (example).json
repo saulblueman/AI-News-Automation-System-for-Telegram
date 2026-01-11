@@ -1,0 +1,1775 @@
+{
+  "name": "Posting TG (example)",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2304,
+        832
+      ],
+      "id": "d0f53f7f-8529-4901-a5a0-970c6b4ccece",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        1248
+      ],
+      "id": "6fa398e6-43bc-4abd-825c-fd036d9fdac7",
+      "name": "3s2",
+      "webhookId": "65aeee7f-b1d6-4730-ba50-5c96e0a0c8aa"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем все входящие элементы от n8n.\nconst items = $input.all();\n\n// Проходим циклом по каждому элементу.\nfor (const item of items) {\n  const data = item.json;\n\n  // Создаем новое поле `mediaUrls` по умолчанию как пустой массив.\n  data.mediaUrls = [];\n\n  // Проверяем, существует ли поле `media` и содержит ли оно непустую строку (ссылку).\n  if (data.media && typeof data.media === 'string') {\n    // Если да, помещаем эту единственную ссылку в массив mediaUrls.\n    data.mediaUrls.push(data.media);\n  }\n\n  // Удаляем старое поле `media`, чтобы избежать дублирования данных.\n  delete data.media;\n}\n\n// Возвращаем измененные элементы.\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        1008
+      ],
+      "id": "b3dc6017-8cc5-40be-923f-b5ba43c3708c",
+      "name": "Code14"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "POST:",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "79cecbb8-658e-4291-b07f-2a4630a315b4"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "60fee3ef-32a5-4920-8030-7c7ae55d4fe9",
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "TG",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f8f175a0-d28f-4f9d-aafb-592cbcd8e12a",
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "NO:",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1760,
+        992
+      ],
+      "id": "0cec76b0-205d-48e5-b47e-5fe7dc770281",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Извлекает 'data' из объекта callback_query и разбивает его\n * на два отдельных элемента: Id (число) и Site (текст).\n *\n * Ожидаемый формат data: [Префикс][ID][Site]\n * Пример: \"TG6Creaitors\"\n */\n\n// Получаем JSON-данные из первого входящего элемента.\nconst itemJson = $input.first().json;\n\n// --- 1. Безопасное извлечение поля 'data' ---\n// Путь к данным изменился, теперь это callback_query.data\nconst callbackData = itemJson.callback_query?.data;\n\n// Объект для хранения результата по умолчанию\nlet extractedData = {\n    Id: '',\n    Site: ''\n};\n\nif (callbackData) {\n    // --- 2. Использование нового регулярного выражения ---\n    // Регулярное выражение:\n    // ^TG     - Строка должна начинаться с \"TG\"\n    // (\\d+)   - Группа 1: (\\d+) - одна или более цифр (это будет ID)\n    // (.+)    - Группа 2: (.+) - все оставшиеся символы до конца строки (это будет Site)\n    // $       - Конец строки\n    const regex = /^TG(\\d+)(.+)$/;\n    const match = callbackData.match(regex);\n\n    if (match) {\n        // match[0] - вся совпавшая строка (например, \"TG6Creaitors\")\n        // match[1] - первая захваченная группа (например, \"6\")\n        // match[2] - вторая захваченная группа (например, \"Creaitors\")\n        extractedData.Id = match[1];\n        extractedData.Site = match[2].trim(); // Убираем возможные пробелы\n    }\n}\n\n// --- 3. Возвращаем новый объект с извлеченными элементами ---\nreturn [{\n    json: extractedData\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1328,
+        1008
+      ],
+      "id": "4637fa57-c8ed-4b3b-a65d-efe091d7edd8",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "chatId": "=",
+        "text": "=Error (TG Posting/Creating) :/",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1280,
+        1344
+      ],
+      "id": "5957bbd2-194f-4236-a2bf-e23b8b25b2c9",
+      "name": "Send a text message1",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Code14').item.json.mediaUrls[0] }}",
+                    "rightValue": ".mp4",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "001cb8b9-7ead-4a42-b87f-52db4cab2019"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Video"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9b0f94b1-1122-417e-bb5f-2d2a0896b2e2",
+                    "leftValue": "={{ $('Code14').item.json.mediaUrls[0] }}",
+                    "rightValue": ".mp4",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notContains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Picture"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5a871acb-55b6-41ec-a773-62d284269e45",
+                    "leftValue": "={{ $('Code14').item.json.mediaUrls[0] }}",
+                    "rightValue": "[null]",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        480,
+        960
+      ],
+      "id": "3b17da3d-8fea-4feb-8c5d-1d1eb427add5",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "=",
+        "file": "={{ $json.mediaUrls[0] }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🚀GO POST",
+                    "additionalFields": {
+                      "callback_data": "={{ $('Code').item.json.Id }}{{ 'POST:' + $('Code').item.json.Site }}"
+                    }
+                  },
+                  {
+                    "text": "🚧EDIT",
+                    "additionalFields": {
+                      "callback_data": "={{ $('Code').item.json.Id }}{{ 'NO:' + $('Code').item.json.Site }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "caption": "={{ $json.content.parts[0].text }}",
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        928,
+        1120
+      ],
+      "id": "6a0ca6d4-8036-4059-8971-7c6ac38578e6",
+      "name": "Send a photo message1",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "01516621-2c2b-4d1b-b2b7-a986d55fadd7",
+              "name": "content.parts[0].text",
+              "value": "={{ $('Creator').item.json.content.parts[0].text }}",
+              "type": "string"
+            },
+            {
+              "id": "9ad87708-a560-4ad2-89a3-88f2b0321f74",
+              "name": "mediaUrls[0]",
+              "value": "={{ $('Code14').item.json.mediaUrls[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        336,
+        976
+      ],
+      "id": "96bccdb5-b061-4e49-8449-b12b3e2d31d8",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "chatId": "=",
+        "text": "={{ $json.content.parts[0].text }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🚀GO POST",
+                    "additionalFields": {
+                      "callback_data": "={{ $('Code').item.json.Id }}{{ 'POST:' + $('Code').item.json.Site }}"
+                    }
+                  },
+                  {
+                    "text": "🚧EDIT",
+                    "additionalFields": {
+                      "callback_data": "={{ $('Code').item.json.Id }}{{ 'NO:' + $('Code').item.json.Site }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        816,
+        1280
+      ],
+      "id": "f866abe6-6d98-4471-8315-5636e5fe570c",
+      "name": "Send a text message",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Извлекает и разбивает данные из Telegram Callback Query.\n * 1. Разбирает строку 'data' на ID и Site.\n * 2. Извлекает подпись ('caption') из 'message'.\n *\n * Ожидаемый формат 'data': [ID]GO:[Site] или [ID]REWORK:[Site]\n * Пример: \"25REWORK:NextWeb\"\n */\n\n// Получаем JSON-данные из первого входящего элемента.\nconst itemJson = $input.first().json;\n\n// --- 1. Инициализация объекта для результата ---\nlet extractedData = {\n    Id: '',\n    Site: '',\n    Text: '' // Поле для подписи (caption) сообщения\n};\n\n// --- 2. Безопасное извлечение данных из всего объекта callback_query ---\nconst callbackQuery = itemJson.callback_query;\n\n// Проверяем, что callback_query вообще существует\nif (callbackQuery) {\n    // Извлекаем строку 'data' для парсинга ID и Site\n    const dataString = callbackQuery.data;\n    // Извлекаем подпись (caption) из вложенного объекта 'message'\n    const messageCaption = callbackQuery.message?.caption;\n\n    // Добавляем подпись в наш результат, если она есть\n    if (messageCaption) {\n        extractedData.Text = messageCaption;\n    }\n    \n    // Парсим строку data, если она существует\n    if (dataString) {\n        // --- 3. Использование регулярного выражения для извлечения ID и Site ---\n        // ^(\\d+)         - Группа 1: одна или более цифр в начале строки (ID)\n        // (?:GO|REWORK): - Разделитель \"GO:\" или \"REWORK:\" (без сохранения в результат)\n        // (.+)          - Группа 2: все оставшиеся символы (Site)\n        // Флаг 'i' делает поиск нечувствительным к регистру (go, GO, Go и т.д.).\n        const regex = /^(\\d+)(?:POST|NO):(.+)$/i;\n        const match = dataString.match(regex);\n\n        if (match) {\n            extractedData.Id = match[1];      // Группа 1: Числовой ID (\"25\")\n            extractedData.Site = match[2].trim(); // Группа 2: Site (\"NextWeb\")\n        }\n    }\n}\n\n// --- 4. Возвращаем новый объект с извлеченными элементами ---\nreturn [{\n    json: extractedData\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1328,
+        512
+      ],
+      "id": "434a3e8d-122f-441e-9f3f-3bfe97e97e4d",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Извлекает и разбивает данные из Telegram Callback Query.\n * 1. Разбирает строку 'data' на ID и Site.\n * 2. Извлекает подпись ('caption') из 'message'.\n *\n * Ожидаемый формат 'data': [ID]GO:[Site] или [ID]REWORK:[Site]\n * Пример: \"25REWORK:NextWeb\"\n */\n\n// Получаем JSON-данные из первого входящего элемента.\nconst itemJson = $input.first().json;\n\n// --- 1. Инициализация объекта для результата ---\nlet extractedData = {\n    Id: '',\n    Site: '',\n    Text: '' // Поле для подписи (caption) сообщения\n};\n\n// --- 2. Безопасное извлечение данных из всего объекта callback_query ---\nconst callbackQuery = itemJson.callback_query;\n\n// Проверяем, что callback_query вообще существует\nif (callbackQuery) {\n    // Извлекаем строку 'data' для парсинга ID и Site\n    const dataString = callbackQuery.data;\n    // Извлекаем подпись (caption) из вложенного объекта 'message'\n    const messageCaption = callbackQuery.message?.caption;\n\n    // Добавляем подпись в наш результат, если она есть\n    if (messageCaption) {\n        extractedData.Text = messageCaption;\n    }\n    \n    // Парсим строку data, если она существует\n    if (dataString) {\n        // --- 3. Использование регулярного выражения для извлечения ID и Site ---\n        // ^(\\d+)         - Группа 1: одна или более цифр в начале строки (ID)\n        // (?:GO|REWORK): - Разделитель \"GO:\" или \"REWORK:\" (без сохранения в результат)\n        // (.+)          - Группа 2: все оставшиеся символы (Site)\n        // Флаг 'i' делает поиск нечувствительным к регистру (go, GO, Go и т.д.).\n        const regex = /^(\\d+)(?:POST|NO):(.+)$/i;\n        const match = dataString.match(regex);\n\n        if (match) {\n            extractedData.Id = match[1];      // Группа 1: Числовой ID (\"25\")\n            extractedData.Site = match[2].trim(); // Группа 2: Site (\"NextWeb\")\n        }\n    }\n}\n\n// --- 4. Возвращаем новый объект с извлеченными элементами ---\nreturn [{\n    json: extractedData\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1584,
+        1584
+      ],
+      "id": "31af9073-67ef-40b2-b404-d08ced0bfedb",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "chatId": "=",
+        "text": "=Error (TG Posting/Posting) :/",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        592,
+        496
+      ],
+      "id": "1201212e-a9c5-41d6-b08e-0e07c6e9d79d",
+      "name": "Send a text message2",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Get a row6').item.json['image URL'] }}",
+                    "rightValue": ".mp4",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "001cb8b9-7ead-4a42-b87f-52db4cab2019"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Video"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9b0f94b1-1122-417e-bb5f-2d2a0896b2e2",
+                    "leftValue": "={{ $('Get a row6').item.json['image URL'] }}",
+                    "rightValue": ".mp4",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notContains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Picture"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5a871acb-55b6-41ec-a773-62d284269e45",
+                    "leftValue": "={{ $('Get a row6').item.json['image URL'] }}",
+                    "rightValue": "[null]",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -208,
+        112
+      ],
+      "id": "461d1e19-ffa8-4725-be1d-0d459cae5c27",
+      "name": "Switch3"
+    },
+    {
+      "parameters": {
+        "operation": "sendVideo",
+        "chatId": "=",
+        "binaryData": true,
+        "additionalFields": {
+          "caption": "={{ $('Get a row6').item.json.Body }}",
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        416,
+        192
+      ],
+      "id": "5d30e78d-9524-4406-9f45-b56047a8f80b",
+      "name": "Send a video1",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "=",
+        "file": "={{ $('Get a row6').item.json['image URL'] }}",
+        "additionalFields": {
+          "caption": "={{ $('Get a row6').item.json.Body }}",
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        272
+      ],
+      "id": "751c62a2-0443-46d5-8bbe-4f8fdfadb730",
+      "name": "Send a photo message",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "=",
+        "text": "={{ $('Get a row6').item.json.Body }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        128,
+        432
+      ],
+      "id": "7b47f910-7c4b-4af8-a79e-2f0cbcf53d94",
+      "name": "Send a text message3",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "=",
+        "message": "=What should we change in news #{{ $json.Id }} from {{ $json.Site }}?",
+        "responseType": "freeText",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1392,
+        1824
+      ],
+      "id": "77db9a18-c9a5-49a7-a8ed-4fff771886ae",
+      "name": "Send message and wait for response",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -96,
+        2352
+      ],
+      "id": "727e8790-e0e2-41ad-8707-54aa3f712a5b",
+      "name": "3s",
+      "webhookId": "65aeee7f-b1d6-4730-ba50-5c96e0a0c8aa"
+    },
+    {
+      "parameters": {
+        "chatId": "=",
+        "text": "=Error (TG Posting/Editing) :/",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1504,
+        2384
+      ],
+      "id": "e7991f64-4287-4140-b89a-487b9136982d",
+      "name": "Send a text message4",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Edit Fields1').item.json.media }}",
+                    "rightValue": ".mp4",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "001cb8b9-7ead-4a42-b87f-52db4cab2019"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Video"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9b0f94b1-1122-417e-bb5f-2d2a0896b2e2",
+                    "leftValue": "={{ $('Edit Fields1').item.json.media }}",
+                    "rightValue": ".mp4",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notContains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Picture"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5a871acb-55b6-41ec-a773-62d284269e45",
+                    "leftValue": "={{ $('Edit Fields1').item.json.media }}",
+                    "rightValue": "[null]",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        704,
+        2000
+      ],
+      "id": "a9fe2f01-dc4a-4cd1-8dce-54d7a385b13c",
+      "name": "Switch6"
+    },
+    {
+      "parameters": {
+        "operation": "sendVideo",
+        "chatId": "=",
+        "binaryData": true,
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🚀GO POST",
+                    "additionalFields": {
+                      "callback_data": "={{ $('Code3').item.json.Id }}{{ 'POST:' + $('Code3').item.json.Site }}"
+                    }
+                  },
+                  {
+                    "text": "🚧EDIT",
+                    "additionalFields": {
+                      "callback_data": "={{ $('Code3').item.json.Id }}{{ 'NO:' + $('Code3').item.json.Site }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "caption": "={{ $json.content.parts[0].text }}",
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1328,
+        2080
+      ],
+      "id": "d25c2dac-a454-4f69-a65f-131afe787bdc",
+      "name": "Send a video2",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "=",
+        "file": "={{ $json.media }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🚀GO POST",
+                    "additionalFields": {
+                      "callback_data": "={{ $('Code3').item.json.Id }}{{ 'POST:' + $('Code3').item.json.Site }}"
+                    }
+                  },
+                  {
+                    "text": "🚧EDIT",
+                    "additionalFields": {
+                      "callback_data": "={{ $('Code3').item.json.Id }}{{ 'NO:' + $('Code3').item.json.Site }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "caption": "={{ $json.content.parts[0].text }}",
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1152,
+        2160
+      ],
+      "id": "046caa9e-21f3-4337-aa92-8b94f31d8f51",
+      "name": "Send a photo message3",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "=",
+        "text": "={{ $json.content.parts[0].text }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🚀GO POST",
+                    "additionalFields": {
+                      "callback_data": "={{ $('Code3').item.json.Id }}{{ 'POST:' + $('Code3').item.json.Site }}"
+                    }
+                  },
+                  {
+                    "text": "🚧EDIT",
+                    "additionalFields": {
+                      "callback_data": "={{ $('Code3').item.json.Id }}{{ 'NO:' + $('Code3').item.json.Site }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        2320
+      ],
+      "id": "4a4702c9-8414-431d-828e-1320d3367a71",
+      "name": "Send a text message5",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "92b3269a-6d9c-402d-bd36-a3aa6db8d7df",
+              "name": "content.parts[0].text",
+              "value": "={{ $('Editor').item.json.content.parts[0].text }}",
+              "type": "string"
+            },
+            {
+              "id": "f6e63ba8-7758-4048-9a39-c5f1170983b5",
+              "name": "media",
+              "value": "={{ $('Edit Fields2').item.json.media }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        2016
+      ],
+      "id": "b33b8c23-7a91-449f-ae5d-127b745d181e",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "chatId": "=-1003171769365",
+        "text": "=✍️Готовлю TG новость {{ $('Code').item.json.Site }} №{{ $('Code').item.json.Id }}. . .",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -496,
+        1008
+      ],
+      "id": "0b377536-fcc4-43c5-a82a-1799e5b78c52",
+      "name": "Send a text message6",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "92b3269a-6d9c-402d-bd36-a3aa6db8d7df",
+              "name": "content.parts[0].text",
+              "value": "={{ $json.content.parts[0].text }}",
+              "type": "string"
+            },
+            {
+              "id": "f6e63ba8-7758-4048-9a39-c5f1170983b5",
+              "name": "media",
+              "value": "={{ $('Get a row').item.json['image URL'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -384,
+        2096
+      ],
+      "id": "1ec59b16-9e08-43a4-913c-f99965bdd5cd",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "create",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mjrzj4ddbaspf5u",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "id",
+              "fieldValue": "={{ $('Code').item.json.Id }}"
+            },
+            {
+              "fieldName": "Body",
+              "fieldValue": "={{ $('Creator').item.json.content.parts[0].text }}"
+            },
+            {
+              "fieldName": "image URL",
+              "fieldValue": "={{ $('Code14').item.json.mediaUrls[0] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        160,
+        976
+      ],
+      "id": "a0515c25-4dc7-49a9-aa46-6da77b084b2b",
+      "name": "Create a row"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "delete",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mjrzj4ddbaspf5u",
+        "id": "={{ $('Code2').item.json.Id }}"
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        -672,
+        128
+      ],
+      "id": "53727d2e-a3cf-4b8c-9163-bb6bed485e7c",
+      "name": "Delete a row1"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mjrzj4ddbaspf5u",
+        "id": "={{ $('Code2').item.json.Id }}"
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        -992,
+        208
+      ],
+      "id": "6d553300-5c73-4ac0-add0-1521350ef3f3",
+      "name": "Get a row6"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mjrzj4ddbaspf5u",
+        "id": "={{ $('Code3').item.json.Id }}"
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        -832,
+        1968
+      ],
+      "id": "17488efa-1dae-4e58-85d8-5624f428f762",
+      "name": "Get a row"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "update",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mjrzj4ddbaspf5u",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "id",
+              "fieldValue": "={{ $('Code3').item.json.Id }}"
+            },
+            {
+              "fieldName": "Body",
+              "fieldValue": "={{ $('Editor').item.json.content.parts[0].text }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        224,
+        2016
+      ],
+      "id": "13554634-2dfd-421e-a735-fc65452bbd39",
+      "name": "Update a row"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mgtomon03qrl5uu",
+        "id": "={{ $('Code').item.json.Id }}"
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        -928,
+        1008
+      ],
+      "id": "db32ec01-6ee3-41de-8ae6-df8ac8170d95",
+      "name": "Get a row21"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.mediaUrls[0] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        848
+      ],
+      "id": "1653f565-b561-4a91-8fa2-f0ee60a0758e",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "delete",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mjrzj4ddbaspf5u",
+        "id": "={{ $('Code').item.json.Id }}"
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        16,
+        976
+      ],
+      "id": "963e8a1d-09d5-452c-a281-297f17df1512",
+      "name": "Delete a row",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.media }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        912,
+        1888
+      ],
+      "id": "7a2fd182-4221-421d-b2fd-09944e78fe27",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get a row6').item.json['image URL'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9b45b0ab-451c-4742-b8dc-f06af5e9bf3f",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ JSON.stringify($('Code14').all()) }}"
+            }
+          ]
+        },
+        "options": {
+          "systemMessage": "=\n### **ROLE**\n\nYou are an AI assistant for the editor-in-chief of a technology media channel. Your primary task is to analyze structured data from a news post and create a complete, rewritten, and engaging publication ready for posting.\n\n### **GOAL**\n\nTo analyze the provided JSON data (specifically the `Summary` field) and produce a high-quality, rewritten news post in Ukrainian. The post must include a catchy headline, a rewritten body, a sharp commentary, and highly specific hashtags. The final output must be ready for copy-pasting into a Telegram channel.\n\n### **INPUT DATA FORMAT**\n\nYou will receive a JSON object with the following fields: `Id`, `Post URL`, `Summary` (this is your primary source for content), `Published`, `TG`, `mediaUrls`. You must only use the `Summary` field for content generation.\n\n### **RESULT STRUCTURE (STRICTLY FOLLOW!)**\n\nYou must provide the answer strictly according to the following template. Use HTML tags for formatting and ensure single empty lines between sections.\n\n```html\n<b>[Catchy and compelling headline in Ukrainian. No emoji.]</b>\n\n[The main text of the post, rewritten in your own words, in Ukrainian. Preserve the original meaning.]\n\n[Sharp, insightful, one-sentence commentary in Ukrainian. No emoji.]\n\n[2-3 highly specific hashtags from the predefined list below]\n```\n\n### **INSTRUCTIONS FOR FILLING EACH ITEM**\n\n**1. Headline (Заголовок):**\n\n  * Create a new, catchy, and short headline (max 10 words) based strictly on the `Summary`.\n  * The headline must be enclosed in `<b>...</b>` tags.\n  * Do not use any emoji.\n  * The language must be strictly Ukrainian.\n\n**2. Rewritten Text (Переписаний текст):**\n\n  * This is the most critical part. Your task is to REWRITE the content from the `Summary` field.\n\n  * ▶️ **CRITICAL RULE: PRESERVING EXISTING LINKS** ◀️\n  * Before rewriting, you **MUST** inspect the input `Summary` for any existing HTML links (e.g., `<a href=\"...\">`).\n  * If a link is found, you are **OBLIGATED** to preserve this link and integrate it harmoniously and logically into your rewritten text.\n  * You can rephrase the sentence around the link for better flow, but the link itself (with its original URL and a relevant anchor text) must be a central part of the final text.\n  * **This rule takes precedence over the general instruction to rewrite everything in your own words.**\n\n  * ▶️ **LENGTH CONSTRAINT:** The rewritten text must be very concise and easy to read. Aim for an optimal maximum of 2-3 sentences. The goal is a short, clear news brief for the reader. ◀️\n  * Preserve all key facts, ideas, and the overall essence of the original text.\n  * You must use your own words and sentence structures to create a unique version of the text.\n  * IT IS FORBIDDEN to add any new information, your own thoughts, or facts that were not in the `Summary`. Only rewrite.\n  * The language must be strictly Ukrainian.\n\n**3. Commentary (Коментар):**\n\n  * Do not use any emoji.\n  * Create one sharp, memorable, and thought-provoking one-sentence commentary. The goal is to provide a fresh perspective that makes the reader think.\n  * To generate the commentary, analyze the `Summary` and choose **ONE** of the following creative angles that best fits the news:\n\n    1.  **The Hidden Motive:** Expose the real, unspoken goal behind the news (money, data, control, competition).\n        *   *Приклад:* \"Нова «безкоштовна» функція від Google — це не подарунок, а найефективніший спосіб зібрати дані для навчання наступного покоління їхніх же платних продуктів.\"\n\n    2.  **The Human Dimension:** Show how this will actually affect an ordinary person, their habits, or their emotions.\n        *   *Приклад:* \"Тепер кожна сімейна вечеря перетвориться на змагання за увагу між дітьми та їхнім новим AI-помічником від Meta.\"\n\n    3.  **The Big Picture:** Frame this event as part of a larger technological or social trend.\n        *   *Приклад:* \"Це ще один крок до світу, де володіння власними даними стане розкішшю, доступною лише за підпискою.\"\n\n    4.  **The Ironic Twist:** Point out the irony, absurdity, or contradiction between what a company says and what it does.\n        *   *Приклад:* \"Компанія, що продає інструменти для творчості, виявилася найменш творчою у вирішенні власних етичних проблем з авторським правом.\"\n\n    5.  **The Future Forecast:** Make a bold but logical prediction about what this will lead to in 1-3 years.\n        *   *Приклад:* \"Сьогодні OpenAI пропонує AI для написання листів, а завтра — для проживання вашого життя замість вас, поки ви працюєте, щоб його оплатити.\"\n\n**MANDATORY RULES FOR COMMENTARY:**\n\n**1. The Uniqueness Test (THE GOLDEN RULE):**\nBefore finalizing, ask yourself: **\"Чи можна цей коментар використати до іншої новини?\"**\n- If YES → Add more specific details from the `Summary`.\n- If NO → The commentary is ready.\n\n**2. Mandatory Specificity:**\nYour commentary **MUST** include at least **ONE** specific detail from the news (company name, product name, number, feature) to guarantee it cannot be reused.\n\n**FORBIDDEN CLICHÉS (Never use these):**\n- \"Вітаємо, ви розблокували...\"\n- \"Чи не час замислитися...\"\n- \"Прекрасний план...\"\n- \"Хто б міг подумати...\"\n- \"Дякуємо, [компанія]...\"\n- Any variation of \"це нормально\"\n- \"Ласкаво просимо в майбутнє\"\n- \"Світ ніколи не буде колишнім\"\n- \"Прогрес не зупинити\"\n\n**CRITICAL INSTRUCTION: Hyperlinking in Text**\n\n  * This rule applies to the **Rewritten Text** and the **Commentary** fields.\n  * While generating text, in addition to preserving existing links from the Summary, you must also identify any *other* mentions of companies, products, or models from the `Predefined Hashtag List` (e.g., `OpenAI`, `Google`, `ChatGPT`).\n  * You must automatically convert these unlinked names into HTML hyperlinks pointing to their main official website, as Telegram supports this formatting.\n  * **Example:** If the text is \"Microsoft анонсувала нову функцію...\", the output must be \"`<a href=\"https://www.microsoft.com/\">Microsoft</a>` анонсувала нову функцію...\".\n  * You are responsible for determining the correct canonical URL for these entities.\n\n**4. Hashtags (Хештеги):**\n\n  * Analyze the `Summary` to identify all key entities: companies, products, technologies, and market trends.\n  * Select 2-3 of the most specific and relevant hashtags from the extensive list below. Prioritize named entities (companies, products) over general topics.\n  * **All hashtags must be on a single line, in English, in lowercase, separated by a space, and must be taken STRICTLY from the list.**\n\n### **PREDEFINED HASHTAG LIST (STRICTLY USE ONLY THESE)**\n\n\\<details\\>\n\\<summary\\>Click to expand the hashtag list\\</summary\\>\n\n**Topic: Companies & Developers 🏢**\n\n  * **Major Players:** `#openai`, `#google`, `#microsoft`, `#meta`, `#anthropic`, `#amazon` (`#aws`), `#apple`, `#nvidia`, `#amd`, `#intel`\n  * **Language Models:** `#mistral`, `#xai` (`#grok`), `#cohere`, `#ai21labs`\n  * **Media Generation:** `#midjourney`, `#stability`, `#runwayml`, `#lumalabs`, `#pikalabs`, `#elevenlabs`, `#suno`\n  * **Chipmakers & Hardware:** `#groq`, `#tenstorrent`, `#cerebras`, `#sambanova`\n  * **Platforms & Tools:** `#huggingface`, `#langchain`, `#llamaindex`\n  * **Other Key Players:** `#tesla`, `#samsung`, `#ibm`, `#oracle`\n\n**Topic: Products, Models & Tools 🛠️**\n\n  * **OpenAI Models:** `#chatgpt`, `#gpt4`, `#gpt5`, `#sora`, `#dalle3`\n  * **Google Models:** `#gemini`, `#lamda`, `#imagen`, `#veo`\n  * **Anthropic Models:** `#claude3`, `#claudesonnet`, `#claudeopus`\n  * **Meta Models:** `#llama3`, `#llama`\n  * **Other Models:** `#grok`, `#mistrallarge`, `#commandr`\n  * **Tools & APIs:** `#tensorflow`, `#pytorch`, `#openvino`, `#cuda`, `#groqcloud`\n\n**Topic: Technologies & Fields 🔬**\n\n  * **Core Categories:** `#neuralnetworks`, `#llm`, `#computervision`\n  * **Generative:** `#genai`, `#imagegen`, `#videogen`, `#musicgen`, `#voicegen`\n  * **Architectures & Methods:** `#transformers`, `#diffusionmodels`, `#rlhf`\n  * **Applications:** `#healthtech`, `#aiscience`, `#autodrive`, `#robotics`\n\n**Topic: Hardware & Infrastructure ⚙️**\n\n  * **Core Hardware:** `#chips`, `#gpu`, `#tpu`, `#lpu`\n  * **Products:** `#blackwell`, `#hopper`, `#mi400`, `#gaudi`\n  * **Infrastructure:** `#datacenters`, `#cloud`, `#supercomputers`\n\n**Topic: Business, Trends & Regulation 📈**\n\n  * **Business:** `#business`, `#startups`, `#investments`, `#ma`\n  * **Trends:** `#agi`, `#opensource`, `#multimodal`, `#agents`, `#enterprise`, `#customsilicon`\n  * **Society & Ethics:** `#ethics`, `#safety`, `#regulation`, `#legislation`\n\n\\</details\\>\n\n### **CRITICAL OVERALL RULES**\n\n  * **The entire response must be exclusively in Ukrainian, except for the hashtags, which must be in English.**\n  * DO NOT include any source links in the final output. The output ends with the hashtags.\n  * Use a single empty line to separate each part: Headline, Rewritten Text, Commentary, and Hashtags.\n\n### **TASK**\n\nHere is the JSON with the article data. Create a publication for the editor based on it, strictly following all the revised structures and instructions."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        992
+      ],
+      "id": "62cf5aab-a910-4d80-bc9e-b37976089081",
+      "name": "Creator",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Пост для редагування: ({{ $('Get a row').item.json.Body }})\nІнструкції для редагування: ({{ $('Send message and wait for response').item.json.data.text }})"
+            }
+          ]
+        },
+        "options": {
+          "systemMessage": "=\n### **ROLE**\n\nYou are a \"Surgical Post Editor\" AI. Your primary task is to meticulously edit a post based on a specific set of instructions, acting as a creative rewriter that precisely follows user commands. You are assisting the editor-in-chief of a technology media channel.\n\n### **GOAL**\n\nTo receive a post and an instruction, analyze the user's intent, and then output a new version where ONLY the specified parts are changed. All other parts must remain 100% identical, and the final output must have perfect formatting, ready for copy-pasting into a Telegram channel.\n\n### **KEY WORKFLOW (STRICTLY FOLLOW THIS ALGORITHM)**\n\n**Step 1: DECONSTRUCTION**\nFirst, break down the incoming `Пост для редагування` into its four logical components:\n\n  * `Заголовок`: The line enclosed in `<b>...</b>` tags.\n  * `Основний текст`: The paragraph(s) between the headline and the commentary.\n  * `Коментар`: The single sentence before the hashtags.\n  * `Хештеги`: The line starting with \\#.\n\n**Step 2: INSTRUCTION ANALYSIS & TASK DEFINITION (NEW LOGIC)**\nThis is the most critical step. Your entire task is to analyze the `Інструкції для редагування`. You must understand that any instruction is a command to creatively rework a component, never a direct text replacement. The key is to correctly interpret the user's command.\n\nFollow this simple algorithm:\n\n  * **Identify the Component (Що міняти?):** First, find the keyword for the component the user wants to change. This will be `заголовок`, `основний текст`, `коментар`, or `хештеги`.\n  * **Identify the Directive (Як саме міняти?):** Look at any and all text that comes after the component name. This is the specific directive. It can be anything — a style, a constraint, or a simple modification.\n  * **Apply the Execution Logic:**\n      * **Scenario A: Standard Rework.** If the instruction contains only the component name (e.g., `(коментар)`, `(заголовок)`), your task is to perform a standard creative rework using the general Creative Rework Guidelines below.\n      * **Scenario B: Rework with a Directive.** If the instruction contains the component name PLUS a directive (e.g., `(основний текст коротше)`, `(коментар - провокаційне питання)`, `(хештеги тільки 2)`), your task is to rework the component with the user's directive as your ABSOLUTE PRIORITY. The directive overrides any conflicting standard guidelines. Use the guidelines only for general style if they don't contradict the command.\n\n**IMPORTANT:** The directives in the examples are not a complete list. You must be able to interpret any directive the user provides. For example, if you see `(заголовок - додати інтриги)`, you must rework the headline to make it more intriguing.\n\n**Step 3: SURGICAL APPLICATION OF CHANGES**\nExecute the tasks defined in Step 2.\n\n  * Generate new content for the component(s) specified in the instruction, precisely following the defined task (Standard Rework or Rework with a Directive).\n  * For all other components NOT mentioned in the instruction: Copy them EXACTLY from the original post without any changes.\n\n**Step 4: FINAL ASSEMBLY & FORMATTING**\nAssemble all components into the final text, applying these mandatory formatting rules:\n\n  * `Заголовок`: Must always be enclosed in `<b>...</b>` tags.\n  * `Layout`: Ensure there is a single empty line between the `Заголовок`, `Основний текст`, `Коментар`, and `Хештеги`.\n  * **Language: The final output must ALWAYS be in Ukrainian, except for the hashtags, which must be in English.**\n\n### **CREATIVE REWORK GUIDELINES (Used for Standard Reworks, adapted for Reworks with a Directive)**\n\n▶️ **CRITICAL RULE: PRESERVING HYPERLINKS** ◀️\nWhen reworking any text component (especially `Основний текст` or `Коментар`), you **MUST** first check if the original text contains any HTML links (`<a href=\"...\">`). If links are found, you are **OBLIGATED** to preserve them and integrate them logically into the new, rewritten text. You can rephrase the sentence *around* the link, but the link itself must remain. **This rule takes precedence over all other rewriting instructions.**\n\n---\n\n  * **При переробці ЗАГОЛОВКА:** Створи новий, короткий та яскравий заголовок (максимум 10 слів), який влучно передає суть новини.\n  * **При переробці ОСНОВНОГО ТЕКСТУ:** **Враховуючи правило збереження гіперпосилань**, перепиши суть новини, зробивши текст дуже стислим і легким для читання (оптимально 2-3 речення). Збережи всі ключові факти та ідеї.\n  * **При переробці КОМЕНТАРЯ:** Проаналізуй суть новини і згенеруй новий, гострий односкладний коментар у стилі Чака Паланіка або Джорджа Карліна, обравши один з чотирьох стилів нижче (або той, який вказав користувач):\n      * **Option 1: Provocative Statement:** Сформулюй цинічний або несподіваний висновок.\n      * **Option 2: Question to the Reader:** Постав гостре риторичне питання.\n      * **Option 3: Dark Humor:** Використай сарказм або чорний гумор.\n      * **Option 4: Ironic Remark:** Створи коментар, який звучить схвально, але тонко викриває абсурдність.\n  * **При переробці ХЕШТЕГІВ:** Проаналізуй текст посту та підбери 2-3 найбільш релевантних та специфічних хештеги виключно з наведеного нижче списку (англійською, маленькими літерами). Пріоритет надавай іменованим сутностям.\n\n### **PREDEFINED HASHTAG LIST (STRICTLY USE ONLY THESE)**\n\n\\<details\\>\n\\<summary\\>Click to expand the hashtag list\\</summary\\>\n\n**Topic: Companies & Developers 🏢**\n\n  * **Major Players:** `#openai`, `#google`, `#microsoft`, `#meta`, `#anthropic`, `#amazon` (`#aws`), `#apple`, `#nvidia`, `#amd`, `#intel`\n  * **Language Models:** `#mistral`, `#xai` (`#grok`), `#cohere`, `#ai21labs`\n  * **Media Generation:** `#midjourney`, `#stability`, `#runwayml`, `#lumalabs`, `#pikalabs`, `#elevenlabs`, `#suno`\n  * **Chipmakers & Hardware:** `#groq`, `#tenstorrent`, `#cerebras`, `#sambanova`\n  * **Platforms & Tools:** `#huggingface`, `#langchain`, `#llamaindex`\n  * **Other Key Players:** `#tesla`, `#samsung`, `#ibm`, `#oracle`\n\n**Topic: Products, Models & Tools 🛠️**\n\n  * **OpenAI Models:** `#chatgpt`, `#gpt4`, `#gpt5`, `#sora`, `#dalle3`\n  * **Google Models:** `#gemini`, `#lamda`, `#imagen`, `#veo`\n  * **Anthropic Models:** `#claude3`, `#claudesonnet`, `#claudeopus`\n  * **Meta Models:** `#llama3`, `#llama`\n  * **Other Models:** `#grok`, `#mistrallarge`, `#commandr`\n  * **Tools & APIs:** `#tensorflow`, `#pytorch`, `#openvino`, `#cuda`, `#groqcloud`\n\n**Topic: Technologies & Fields 🔬**\n\n  * **Core Categories:** `#neuralnetworks`, `#llm`, `#computervision`\n  * **Generative:** `#genai`, `#imagegen`, `#videogen`, `#musicgen`, `#voicegen`\n  * **Architectures & Methods:** `#transformers`, `#diffusionmodels`, `#rlhf`\n  * **Applications:** `#healthtech`, `#aiscience`, `#autodrive`, `#robotics`\n\n**Topic: Hardware & Infrastructure ⚙️**\n\n  * **Core Hardware:** `#chips`, `#gpu`, `#tpu`, `#lpu`\n  * **Products:** `#blackwell`, `#hopper`, `#mi400`, `#gaudi`\n  * **Infrastructure:** `#datacenters`, `#cloud`, `#supercomputers`\n\n**Topic: Business, Trends & Regulation 📈**\n\n  * **Business:** `#business`, `#startups`, `#investments`, `#ma`\n  * **Trends:** `#agi`, `#opensource`, `#multimodal`, `#agents`, `#enterprise`, `#customsilicon`\n  * **Society & Ethics:** `#ethics`, `#safety`, `#regulation`, `#legislation`\n\n\\</details\\>\n\n### **INPUT DATA FORMAT**\n\n  * `Пост для редагування:`\n    (Тут буде повний текст поста)\n  * `Інструкції для редагування:`\n    (Тут буде будь-яка команда від користувача, наприклад: `(коментар)`, `(основний текст коротше)`, `(коментар - зробити більш цинічним)`))"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        2112
+      ],
+      "id": "f70c4366-1e58-44ca-b9e4-c2979872b974",
+      "name": "Editor",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "sendVideo",
+        "chatId": "=",
+        "binaryData": true,
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🚀GO POST",
+                    "additionalFields": {
+                      "callback_data": "={{ $('Code').item.json.Id }}{{ 'POST:' + $('Code').item.json.Site }}"
+                    }
+                  },
+                  {
+                    "text": "🚧EDIT",
+                    "additionalFields": {
+                      "callback_data": "={{ $('Code').item.json.Id }}{{ 'NO:' + $('Code').item.json.Site }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "caption": "={{ $json.content.parts[0].text }}",
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1200,
+        1056
+      ],
+      "id": "bf632018-d0e9-46b0-838a-bde3dfb7607e",
+      "name": "Send a video",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "3s2": {
+      "main": [
+        [
+          {
+            "node": "Creator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code14": {
+      "main": [
+        [
+          {
+            "node": "Send a text message6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Get a row21",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a photo message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a photo message1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Get a row6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a video1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a photo message": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message3": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3s": {
+      "main": [
+        [
+          {
+            "node": "Editor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch6": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a photo message3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a video2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a photo message3": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message5": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Switch6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message6": {
+      "main": [
+        [
+          {
+            "node": "Creator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Editor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row6": {
+      "main": [
+        [
+          {
+            "node": "Delete a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a row1": {
+      "main": [
+        [
+          {
+            "node": "Switch3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row21": {
+      "main": [
+        [
+          {
+            "node": "Code14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Send a video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a row": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Send a video2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Send a video1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Creator": {
+      "main": [
+        [
+          {
+            "node": "Delete a row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "3s2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Editor": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "3s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a video": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "40ae8bd3-c256-40aa-9bb1-827cc3f7d0f6",
+  "meta": {
+    "instanceId": "ba11b2825d3e379606d94cf5040fe1f575a23b6e6b8cfb66c708c61b412a8c3e"
+  },
+  "id": "IAgKop9uiCkf8GVM",
+  "tags": []
+}

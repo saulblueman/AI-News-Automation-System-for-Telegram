@@ -1,0 +1,791 @@
+{
+  "name": "Parsing Website (example)",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -128,
+        416
+      ],
+      "id": "0721597c-01f8-461b-ae25-42e4dc6ca4a7",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "create",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mgtomon03qrl5uu",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "URL",
+              "fieldValue": "={{ $json.sourceURL }}"
+            },
+            {
+              "fieldName": "Title",
+              "fieldValue": "={{ $json.title }}"
+            },
+            {
+              "fieldName": "Published",
+              "fieldValue": "={{ $json.publishedAt }}"
+            },
+            {
+              "fieldName": "=media",
+              "fieldValue": "={{ $json.mainImage }}"
+            },
+            {
+              "fieldName": "Summary",
+              "fieldValue": "={{ $json.summary }}"
+            },
+            {
+              "fieldName": "Site",
+              "fieldValue": "TechCrunch"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        480,
+        336
+      ],
+      "id": "790d13d9-a873-4076-a19c-d77c27a94dd7",
+      "name": "Create a row"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "link",
+              "cssSelector": "a.loop-card__title-link",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -784,
+        416
+      ],
+      "id": "2d6eb436-ad72-429a-b4e4-f2f7b04e665e",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "link",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        416
+      ],
+      "id": "187eea1d-568c-4350-a3c5-61554facb320",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "url": "https://techcrunch.com/category/artificial-intelligence/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -992,
+        416
+      ],
+      "id": "ab026054-fbba-4e43-b339-cbb7aae06376",
+      "name": "TechCrunch"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mgtomon03qrl5uu",
+        "id": "={{ $json.Id }}"
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        688,
+        336
+      ],
+      "id": "e847d026-5a1c-4abc-8df6-7d55eff17265",
+      "name": "Get a row3"
+    },
+    {
+      "parameters": {
+        "maxItems": 5
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        416
+      ],
+      "id": "3c7e01c0-a6ab-4c26-9e77-2f6df10571b9",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://production-sfo.browserless.io/unblock?token=2SjXmKBCMutgo6v17fd9894ed1cbf7830a2169dd37f9cd94c",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"url\": \"{{ $json.url }}\",\n  \"content\": true,\n  \"cookies\": false,\n  \"screenshot\": false,\n  \"browserWSEndpoint\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        128,
+        336
+      ],
+      "id": "5c1f7f0c-5979-4aea-b3b7-abdbf53d2479",
+      "name": "Browserless",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mgtomon03qrl5uu",
+        "id": "={{ $('Get a row3').item.json.Id }}"
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        1408,
+        336
+      ],
+      "id": "d20feb0a-1032-4045-a886-3677ecb70559",
+      "name": "Get a row"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1840,
+        32
+      ],
+      "id": "9cc02d56-a161-4372-8070-5be6291721c0",
+      "name": "3s",
+      "webhookId": "57de42b4-b191-4830-ba0e-895a671d57f2"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "update",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mgtomon03qrl5uu",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "id",
+              "fieldValue": "={{ $('Get a row3').item.json.Id }}"
+            },
+            {
+              "fieldName": "DocumentID",
+              "fieldValue": "={{ $('Random number').item.json.randomString }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        1232,
+        336
+      ],
+      "id": "a8b1b4f3-5807-4edd-b8df-8c78357f55ba",
+      "name": "Update a row"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "adef1bf7-acc2-4850-9d6c-2ba324ca71d4",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        16
+      ],
+      "id": "086e227f-db09-4839-b84f-6d5b6eb0b213",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "927dd3df-e28b-43a8-845d-42824a432049",
+              "name": "url",
+              "value": "={{ $json.link }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -192,
+        16
+      ],
+      "id": "f488c965-6f09-4c74-a5fb-5c8c719b8a7c",
+      "name": "URL"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "getAll",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mgtomon03qrl5uu",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "URL"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "10c1150b-e7ee-4e6e-9105-faf4886f5b27",
+      "name": "URLs",
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1248,
+        416
+      ],
+      "id": "b5e38e04-1248-4fbe-b13b-1746a0264484",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "tg-autonews",
+        "fileName": "=Docs/{{ $('Random number').item.json.randomString }}.txt",
+        "binaryData": false,
+        "fileContent": "={{ $('Browserless').item.json.content }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        336
+      ],
+      "id": "dab22246-6256-4626-b152-8d7d081b656e",
+      "name": "Upload a file"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        256,
+        464
+      ],
+      "id": "78c514a8-bb2c-4f4e-897b-b1337ff8b5ef",
+      "name": "Wait",
+      "webhookId": "0bdf2f95-c200-43ed-9b8c-04d73641baab"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ JSON.stringify($('Data sanitizer').all()) }}"
+            }
+          ]
+        },
+        "options": {
+          "systemMessage": "=РОЛЬ\n\nТи — AI-асистент головного редактора в технологічному медіа-каналі. Твоя головна задача — аналізувати спарсені новосні статті й готувати по ним короткі, змістовні зведення (брифінги) для прийняття редакторських рішень.\n\nЦІЛЬ\n\nПроаналізувати структуровані дані про новинну статтю (у форматі JSON) і скласти на їх основі максимально короткий і чіткий брифінг, який допоможе редактору зрозуміти суть новини, її потенціал і визначити формат майбутньої публікації.\n\nФОРМАТ ВХІДНИХ ДАНИХ\n\nТи отримаєш JSON-об'єкт із полями: Id, Title, Summary, URL, Published, Site.\n\nСТРУКТУРА РЕЗУЛЬТАТУ (СУВОРО ДОТРИМУВАТИСЬ!)\n\nТи повинен видати відповідь суворо за таким шаблоном, використовуючи HTML-теги для форматування та порожні рядки між пунктами:\n\n<pre>[Site] новость №[Id]</pre>\n\n[#hashtag1] [#hashtag2]\n\n<b>🗓️ Дата публикации:</b> [Дата из Published]\n\n<b>📰 Заголовок:</b> [Заголовок здесь]\n\n<b>🎯 Суть в 1 предложении:</b> [Суть здесь]\n\n<b>💡 Идея для подачи в ТГ:</b> [Анализ и рекомендации здесь]\n\n<b>🔗 Источник:</b> ([Источник здесь])\n\nІНСТРУКЦІЇ ЩОДО ЗАПОВНЕННЯ КОЖНОГО ПУНКТУ\n\n    Перший рядок: Створи ідентифікатор у форматі [Site] новость №[Id], використовуючи значення з JSON, і оберни його в тег <pre>.\n\n    Хештеги (ВАЖЛИВИЙ БЛОК):\n\n        Розмісти їх на новому рядку після порожнього рядка, що йде за блоком <pre>.\n\n        Проаналізуй Summary, щоб зрозуміти основну тему новини.\n\n        Вибери 1-2 найбільш релевантних хештеги суворо зі списку нижче.\n\n        Розмісти хештеги в один рядок через пробіл. Вони повинні використовуватися в тому вигляді, в якому написані у списку (українською мовою).\n\n    Дата публікації (опціонально): Якщо поле Published в JSON не порожнє, додай цей рядок. Почни з <b>🗓️ Дата публикации:</b> і встав значення з поля Published. Якщо поле порожнє, повністю пропусти цей пункт.\n\n    Заголовок: Придумай яскравий, але короткий заголовок (до 10 слів).\n\n    Суть в 1 реченні: Сформулюй головну думку всієї статті в одному, максимум двох, реченнях.\n\n    Ідея для подачі в ТГ: Цей блок — найважливіший. Проаналізуй Summary і надай редактору коротке аналітичне зведення в наступному форматі:\n\n        Почни з рядка <b>Формат:</b>. Вибери ОДНУ з наступних категорій і коротко (в одному реченні) обґрунтуй свій вибір:\n\n            Анонс / Инновация: (якщо це новина про вихід нового продукту, технології, дослідження).\n\n            Сводка / Результаты: (якщо в статті наводяться підсумки дослідження, плюси й мінуси, готова аналітика).\n\n            Экспертное мнение: (якщо новина — це чиясь колонка, думка або вимагає глибокого авторського розбору).\n\n            Обзор / Тест: (якщо новина про продукт, який можна протестувати й порівняти з аналогами).\n\n        Після цього додай рядок <b>Рекомендации:</b>. Дай одну загальну, але конкретну рекомендацію, що об'єднує, що можна прибрати і що додати (наприклад, Упростить техническую часть, добавив сравнение с X).\n\n    Джерело: Скопіюй значення з поля URL і включи його в круглі дужки.\n\n    ВАЖЛИВО: Кожен заголовок пункту (Заголовок, Суть, і т.д.) повинен бути виділений жирним (<b>) та з емодзі. Між кожним пунктом має бути один порожній рядок.\n\nСПИСОК ДОСТУПНИХ ХЕШТЕГІВ\n\n    Тема: Великі мовні моделі (LLM)\n\n        Основний: #Нейромережі\n\n        Уточнюючі: #МовніМоделі, #AIЧатБоти\n\n        Розробники: #OpenAI, #Google, #xAI, #Anthropic\n\n    Тема: Генерація медіа (зображення, відео, аудіо)\n\n        Основні: #AIArt, #AIАудіо\n\n        Уточнюючі: #ГенераціяЗображень, #AIVideo, #AIМузика, #AIГолос\n\n        Продукти: #Midjourney, #Higgsfield\n\n    Тема: Розробка та дослідження\n\n        Основний: #AITехнології\n\n        Уточнюючі: #AIРозробка, #AIДослідження\n\n    Тема: AI в бізнесі\n\n        Основний: #AIБізнес\n\n        Уточнюючі: #AIПродуктивність, #AIСтартапи, #Стартап\n\nЗАВДАННЯ\n\nОсь JSON з даними про статтю. Створи на його основі брифінг для редактора, суворо дотримуючись заданої структури та інструкцій."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        336
+      ],
+      "id": "f3309d01-cedb-4449-b046-b51432cdace9",
+      "name": "Preview creation",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "=",
+        "text": "={{ $json.content.parts[0].text }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🚀CREATE POST",
+                    "additionalFields": {
+                      "callback_data": "={{$('Get a row').item.json.Id}}{{$('Get a row').item.json.Site}}{{'Doc:' +  $('Random number').item.json.randomString }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2192,
+        448
+      ],
+      "id": "a1c46467-7a91-469d-b8af-5d329691ce85",
+      "name": "Send preview",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "=",
+        "text": "=Error ({{$('Get a row').item.json.Id}}{{$('Get a row').item.json.Site}}) :/",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2416,
+        512
+      ],
+      "id": "befc57ce-a487-4185-b114-a50c4f48e03e",
+      "name": "Error",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst items = $input.all();\nconst finalResults = [];\n\nfunction cleanHtmlText(htmlString) {\n  if (!htmlString) return '';\n  \n  let text = htmlString.replace(/<[^>]*>/g, '');\n  \n  text = text.replace(/&rsquo;/g, \"'\")\n             .replace(/&ndash;/g, \"–\")\n             .replace(/&ldquo;/g, \"“\")\n             .replace(/&rdquo;/g, \"”\")\n             .replace(/&nbsp;/g, \" \")\n             .replace(/&amp;/g, \"&\");\n\n  return text.replace(/\\s+/g, ' ').trim();\n}\n\n\nfor (const item of items) {\n  const html = item.json.content || '';\n  if (!html) continue;\n\n  const sourceURLMatch = html.match(/<link rel=\"canonical\" href=\"([^\"]+)\"/);\n  const sourceURL = sourceURLMatch ? sourceURLMatch[1] : (item.json.url || 'URL не найден');\n\n  \n  const titleMatch = html.match(/<title>([^<]+)<\\/title>/);\n  const title = titleMatch ? titleMatch[1].split('|')[0].trim() : 'Заголовок не найден';\n\n\n  const publishedAtMatch = html.match(/<meta property=\"article:published_time\" content=\"([^\"]+)\">/);\n  const publishedAt = publishedAtMatch ? publishedAtMatch[1] : 'Дата не найдена';\n\n\n  const mainImageMatch = html.match(/<meta property=\"og:image\" content=\"([^\"]+)\">/);\n  const mainImage = mainImageMatch ? mainImageMatch[1] : '';\n\n  \n  const videoIdMatches = html.matchAll(/i\\.ytimg\\.com\\/vi\\/([A-Za-z0-9_-]{11})\\//g);\n  const uniqueVideoIds = [...new Set(Array.from(videoIdMatches, m => m[1]))];\n  const videos = uniqueVideoIds.map(id => `https://www.youtube.com/watch?v=${id}`);\n  \n\n  const allImageMatches = html.matchAll(/<img[^>]+src=\"([^\"]+)\"/g);\n  const otherImages = Array.from(allImageMatches, m => m[1])\n    .filter(src => \n      src.startsWith('https://techcrunch.com/wp-content/uploads/') &&\n      src !== mainImage &&\n      !src.includes('logo') &&\n      !src.includes('avatar') &&\n      !src.includes('favicon')\n    );\n  const images = [...new Set(otherImages)];\n  \n\n  const contentMatch = html.match(/<div class=\"entry-content wp-block-post-content[^>]*>([\\s\\S]*?)<\\/div>\\s*<div class=\"wp-block-tc23-post-relevant-terms\">/);\n  const rawContent = contentMatch ? contentMatch[1] : '';\n\n\n  const linkMatches = rawContent.matchAll(/<a[^>]+href=\"([^\"]+)\"/g);\n  const externalLinks = Array.from(linkMatches, m => m[1])\n    .filter(link => \n      !link.startsWith('/') &&\n      !link.includes('techcrunch.com')\n    );\n  const resources = [...new Set(externalLinks)];\n  \n \n  const summary = cleanHtmlText(rawContent);\n\n\n  finalResults.push({\n    json: {\n      sourceURL: sourceURL,\n      title: title,\n      summary: summary,\n      publishedAt: publishedAt,\n      mainImage: mainImage,\n      resources: resources,\n      images: images,\n      videos: videos,\n    }\n  });\n}\n\nreturn finalResults;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        336
+      ],
+      "id": "b65fab89-0bd4-4e57-8598-1769746b3489",
+      "name": "Parsing"
+    },
+    {
+      "parameters": {
+        "jsCode": "const urlToCompare = $node[\"URL\"].json.url;\n\nif (!urlToCompare) {\n  return [];\n}\n\nconst urlListFromInput = items.map(item => item.json.URL);\n\nconst isMatchFound = urlListFromInput.includes(urlToCompare);\n\nif (isMatchFound) {\n  return [{\n    json: {\n      status: \"duplicate_found\",\n      checkedUrl: urlToCompare\n    }\n  }];\n  \n} else {\n  return [{\n    json: {\n      url: urlToCompare\n    }\n  }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        16
+      ],
+      "id": "0bcad84a-fd39-4ac0-9cba-3f05613a41d8",
+      "name": "Advanced filter"
+    },
+    {
+      "parameters": {
+        "jsCode": "const randomNumber = Math.floor(Math.random() * 6) + 1;\n\nconst characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\nlet randomString = '';\nfor (let i = 0; i < 6; i++) {\n  randomString += characters.charAt(Math.floor(Math.random() * characters.length));\n}\n\nreturn [{ json: { randomNumber: randomNumber, randomString: randomString } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        336
+      ],
+      "id": "effb5fe5-69ee-4d66-b2d0-cacc87bbe0fd",
+      "name": "Random number"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nfor (const item of items) {\n  const data = item.json;\n\n  try {\n    if (typeof data.videos === 'string') {\n      data.videos = JSON.parse(data.videos);\n    }\n    if (typeof data.resources === 'string') {\n      data.resources = JSON.parse(data.resources);\n    }\n    if (typeof data.images === 'string') {\n      data.images = JSON.parse(data.images);\n    }\n  } catch (error) {\n    if (!Array.isArray(data.videos)) data.videos = [];\n    if (!Array.isArray(data.resources)) data.resources = [];\n    if (!Array.isArray(data.images)) data.images = [];\n  }\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        336
+      ],
+      "id": "a3ecbbfe-9be8-48c8-9b3b-a035a3540f6b",
+      "name": "Data sanitizer"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        [
+          {
+            "node": "Get a row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TechCrunch": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row3": {
+      "main": [
+        [
+          {
+            "node": "Random number",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Browserless": {
+      "main": [
+        [
+          {
+            "node": "Parsing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "Data sanitizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3s": {
+      "main": [
+        [
+          {
+            "node": "Preview creation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL": {
+      "main": [
+        [
+          {
+            "node": "URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URLs": {
+      "main": [
+        [
+          {
+            "node": "Advanced filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Browserless",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "TechCrunch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Browserless",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preview creation": {
+      "main": [
+        [
+          {
+            "node": "Send preview",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "3s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send preview": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsing": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Advanced filter": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Random number": {
+      "main": [
+        [
+          {
+            "node": "Upload a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data sanitizer": {
+      "main": [
+        [
+          {
+            "node": "Preview creation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9c410596-a02b-4dd2-acc6-fa43b8bc2a96",
+  "meta": {
+    "instanceId": "ba11b2825d3e379606d94cf5040fe1f575a23b6e6b8cfb66c708c61b412a8c3e"
+  },
+  "id": "TkwxUCbcPnZOLPe7",
+  "tags": []
+}

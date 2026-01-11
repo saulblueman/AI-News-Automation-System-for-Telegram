@@ -1,0 +1,1078 @@
+{
+  "name": "Scraping TG-Channel (example)",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1040,
+        224
+      ],
+      "id": "b1ee60b3-1b5c-4116-8ca9-2c117d76453c",
+      "name": "Loop Over Items3"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "create",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mgtomon03qrl5uu",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "URL",
+              "fieldValue": "={{ $('URL cleaning').item.json.postUrl }}"
+            },
+            {
+              "fieldName": "Published",
+              "fieldValue": "={{ $('URL cleaning').item.json.publishedAt }}"
+            },
+            {
+              "fieldName": "Summary",
+              "fieldValue": "={{ $('URL cleaning').item.json.summary }}"
+            },
+            {
+              "fieldName": "media",
+              "fieldValue": "=https://telesco-pe.automater206.workers.dev/tg-autonews/All/{{ $('URL cleaning').item.json.mediaFileNames[0] }}"
+            },
+            {
+              "fieldName": "Site",
+              "fieldValue": "GPT News"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        3024,
+        96
+      ],
+      "id": "7ff4b01a-bb4f-4f2b-b7ed-1bf3e1924332",
+      "name": "Create a row3"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mgtomon03qrl5uu",
+        "id": "={{ $json.Id }}"
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        3184,
+        96
+      ],
+      "id": "6fb04d95-e4e5-4829-b302-ac84fc72a3da",
+      "name": "Get a row1"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "update",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mgtomon03qrl5uu",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "id",
+              "fieldValue": "={{ $('Get a row1').item.json.Id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        3904,
+        192
+      ],
+      "id": "3a241568-4522-43ff-a115-2e2588ec86df",
+      "name": "Update a row"
+    },
+    {
+      "parameters": {
+        "chatId": "=-1003171769365",
+        "text": "={{ $('Create preview').item.json.content.parts[0].text }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🚀CREATE POST",
+                    "additionalFields": {
+                      "callback_data": "={{'TG' + $('Get a row1').item.json.Id}}{{$('Get a row1').item.json.Site}}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4432,
+        432
+      ],
+      "id": "4c49b93c-6a44-4c62-aeab-9bcf5c4d34e3",
+      "name": "Send a text message2",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.mediaUrls[0] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2576,
+        96
+      ],
+      "id": "557bb075-2716-40b8-9b6c-cca53178941e",
+      "name": "Get tmp file"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3568,
+        256
+      ],
+      "id": "974dfc54-790d-4904-b18b-79e5acaeebed",
+      "name": "3s",
+      "webhookId": "efb5412c-27c7-429c-a2ee-6c7456a28dca"
+    },
+    {
+      "parameters": {
+        "url": "https://telegram92.p.rapidapi.com/api/history/channel",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "channel",
+              "value": "={{ $json.channel_name }}"
+            },
+            {
+              "name": "limit",
+              "value": "10"
+            },
+            {
+              "name": "offset",
+              "value": "0"
+            },
+            {
+              "name": "offset_id",
+              "value": "0"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-rapidapi-host",
+              "value": "telegram92.p.rapidapi.com"
+            },
+            {
+              "name": "x-rapidapi-key",
+              "value": "12345"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        576,
+        224
+      ],
+      "id": "5f4b2101-8fb2-4520-be7c-a8b74a00aca0",
+      "name": "TG Parser",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Data sanitization').item.json.media }}",
+                    "rightValue": ".mp4",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "001cb8b9-7ead-4a42-b87f-52db4cab2019"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Video"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9b0f94b1-1122-417e-bb5f-2d2a0896b2e2",
+                    "leftValue": "={{ $('Data sanitization').item.json.media }}",
+                    "rightValue": ".mp4",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notContains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Picture"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5a871acb-55b6-41ec-a773-62d284269e45",
+                    "leftValue": "={{ $('Data sanitization').item.json.media }}",
+                    "rightValue": "[null]",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        4112,
+        192
+      ],
+      "id": "a9c73e6e-2b89-4149-af13-86ff83a12952",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "=",
+        "file": "=https://example.workers.dev/tg-autonews/All/{{ $('URL cleaning').item.json.mediaFileNames[0] }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🚀CREATE POST",
+                    "additionalFields": {
+                      "callback_data": "={{'TG' + $('Get a row1').item.json.Id}}{{$('Get a row1').item.json.Site}}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "caption": "={{ $('Create preview').item.json.content.parts[0].text }}",
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4592,
+        368
+      ],
+      "id": "6886cf53-3506-4140-974f-7d7d0b551ac7",
+      "name": "Send a photo message",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "sendVideo",
+        "chatId": "=",
+        "binaryData": true,
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🚀CREATE POST",
+                    "additionalFields": {
+                      "callback_data": "={{'TG' + $('Get a row1').item.json.Id}}{{$('Get a row1').item.json.Site}}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "caption": "={{ $('Create preview').item.json.content.parts[0].text }}",
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4784,
+        304
+      ],
+      "id": "a6751497-0053-4349-a0a2-47d6a97cb795",
+      "name": "Send a video",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "adef1bf7-acc2-4850-9d6c-2ba324ca71d4",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2112,
+        96
+      ],
+      "id": "1bc9bb88-15fc-4c57-8699-b0434c78e10d",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "927dd3df-e28b-43a8-845d-42824a432049",
+              "name": "url",
+              "value": "={{ $json.postUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "ed937ed6-6c96-4d32-847c-b077be02b45d",
+              "name": "publishedAt",
+              "value": "={{ $json.publishedAt }}",
+              "type": "string"
+            },
+            {
+              "id": "002a6446-3012-4361-8233-682a86d7dfae",
+              "name": "summary",
+              "value": "={{ $json.summary }}",
+              "type": "string"
+            },
+            {
+              "id": "00ad2483-1e1b-4045-b50c-e038428c6d93",
+              "name": "mediaUrls",
+              "value": "={{ $json.mediaUrls }}",
+              "type": "array"
+            },
+            {
+              "id": "82e04a49-19f7-4ba8-b189-f0ea57432230",
+              "name": "postUrl",
+              "value": "={{ $json.postUrl }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1264,
+        96
+      ],
+      "id": "2e06b430-0d48-43fe-8ccf-307dc72e1332",
+      "name": "URL"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "getAll",
+        "projectId": "p6iw2n8x3jjlg33",
+        "table": "mgtomon03qrl5uu",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "URL"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        1472,
+        96
+      ],
+      "id": "5358a653-5653-44b7-aec2-341c846f5e40",
+      "name": "URLs",
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a21cb812-2126-4517-86c7-00b4b7a4d2be",
+              "name": "postUrl",
+              "value": "={{ $json.url }}",
+              "type": "string"
+            },
+            {
+              "id": "3f4f6428-3db6-411e-9231-1d7b434ce518",
+              "name": "mediaUrls[0]",
+              "value": "={{ $json.mediaUrls[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "6925d609-bd8e-4333-ade2-7fe237d313ca",
+              "name": "summary",
+              "value": "={{ $json.summary }}",
+              "type": "string"
+            },
+            {
+              "id": "6bcf3020-91ac-4b37-afda-156fec20dcec",
+              "name": "publishedAt",
+              "value": "={{ $json.publishedAt }}",
+              "type": "string"
+            },
+            {
+              "id": "0b29043f-1b6a-4c4c-89a9-2377466a5abc",
+              "name": "status",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1872,
+        96
+      ],
+      "id": "a5b9fe1e-bed5-46eb-80fa-a42bc419223b",
+      "name": "Check"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2625dd5e-00e0-4fbf-80eb-79928b074ef4",
+              "name": "channel_name",
+              "value": "GPTMainNews",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        224
+      ],
+      "id": "b54f8a2e-3a20-45dd-b37d-0edd7cd8748d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        224
+      ],
+      "id": "de036104-aa1b-46ca-876f-8ddf6705b229",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "amount": 60
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        496
+      ],
+      "id": "eb519321-fd99-4b60-8b66-59077567f961",
+      "name": "60s",
+      "webhookId": "ae6499ec-faf8-4ed1-9926-cb1df2906d9d"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Финальная версия, которая сохраняет все исходные данные ===\n\n// 1. Получаем ВЕСЬ ОБЪЕКТ из ноды \"URL\", а не только ссылку.\nconst sourceData = $node[\"URL\"].json;\nconst urlToCompare = sourceData.url;\n\n// Если по какой-то причине ссылка не пришла, останавливаемся.\nif (!urlToCompare) {\n  return [];\n}\n\n// 2. Получаем список всех ссылок, которые пришли в эту ноду напрямую.\nconst urlListFromInput = items.map(item => item.json['URL']);\n\n// 3. Сравниваем, есть ли \"идеальная\" ссылка в списке.\nconst isMatchFound = urlListFromInput.includes(urlToCompare);\n\n// 4. Возвращаем результат, сохраняя исходные данные.\nif (isMatchFound) {\n  // ДА, СОВПАДЕНИЕ НАЙДЕНО.\n  // Возвращаем исходный объект, добавляя к нему поле \"status\".\n  return [{\n    json: {\n      ...sourceData, // Копируем все старые поля из исходного объекта\n      status: \"duplicate_found\" // Добавляем новое поле для фильтрации\n    }\n  }];\n  \n} else {\n  // НЕТ, СОВПАДЕНИЙ НЕ НАЙДЕНО. Ссылка уникальна.\n  // Просто возвращаем исходный объект без каких-либо изменений.\n  return [{\n    json: sourceData\n  }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        96
+      ],
+      "id": "b93a99ca-b181-4d7a-a06e-8223eac0dc04",
+      "name": "Advanced filter",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "tg-autonews",
+        "fileName": "=All/{{ $('URL cleaning').item.json.mediaFileNames[0] }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        2832,
+        96
+      ],
+      "id": "9a1d91fc-6dd9-43a8-9978-632bed7d936b",
+      "name": "Save to storage",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ JSON.stringify($('Data sanitization').all()) }}"
+            }
+          ]
+        },
+        "options": {
+          "systemMessage": "=# ROLE You are an AI assistant who prepares posts for publication in a technology-focused Telegram channel. Your task is to analyze parsed posts from other channels and create a concise, ready-to-publish preview based on them.  # GOAL To analyze structured data about a post (in JSON format) and compose a convenient preview for Telegram. This preview must include a headline, the essence of the news, the date, a source link, and relevant hashtags. The entire text output (headline and essence) must be in Russian. The only exception is the hashtags.  # INPUT DATA FORMAT You will receive a JSON object where the \"json\" key contains the post data with the following fields: Id, Summary (may contain HTML), Post URL (link to the original post), Published (publication date), and Site (name of the source channel).  # RESULT STRUCTURE (STRICTLY FOLLOW!) You must provide the answer strictly according to the following template, using HTML tags for formatting and empty lines between blocks. Do not add any explanatory text or section titles like \"Headline:\", \"Essence:\", etc.  <pre>ТG [Site] новость №[Id]</pre>  [A catchy and short headline in Russian]  [The essence of the news in 1-2 sentences in Russian]  📅 [Publication Date]  🔗 [Source Link]  [#hashtag1] [#hashtag2]  # INSTRUCTIONS      First Line: Create an identifier in the format ТG [Site] новость №[Id], using the Site and Id values from the JSON. Wrap it in a <pre> tag.      Headline: Based on the Summary, create a catchy, attention-grabbing headline (up to 10 words). It must be in Russian.      Essence: Formulate the main idea from the Summary in one, or at most two, sentences. It must be in Russian.      Date: Take the value from the Published field and place the 📅 emoji before it.      Source: Take the value from the Post URL field and place the 🔗 emoji before it.      Hashtags (IMPORTANT BLOCK):          Place this on a new line after an empty line following the source block.          Analyze the Summary to understand the main topic of the news.          Select 1-2 of the most relevant hashtags strictly from the list below.          Place the hashtags on a single line, separated by a space. They must be used exactly as written in the list (in Ukrainian).  # LIST OF AVAILABLE HASHTAGS      Тема: Великі мовні моделі (LLM)          Основний: #Нейромережі          Уточнюючі: #МовніМоделі, #AIЧатБоти          Розробники: #OpenAI, #Google, #xAI, #Anthropic      Тема: Генерація медіа (зображення, відео, аудіо)          Основні: #AIArt, #AIАудіо          Уточнюючі: #ГенераціяЗображень, #AIVideo, #AIМузика, #AIГолос          Продукти: #Midjourney, #Higgsfield      Тема: Розробка та дослідження          Основний: #AITехнології          Уточнюючі: #AIРозробка, #AIДослідження      Тема: AI в бізнесі          Основний: #AIБізнес          Уточнюючі: #AIПродуктивність, #AIСтартапи, #Стартап  # TASK Here is the JSON with the post data. Create a Telegram preview based on it, strictly following the given structure and instructions."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        3520,
+        96
+      ],
+      "id": "30034646-31e3-4118-a0a2-ad4a878b5b44",
+      "name": "Create preview",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "=",
+        "text": "=Error ({{ $('Data sanitization').item.json.Id }}{{ $('Data sanitization').item.json.Site }}) :/",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4960,
+        608
+      ],
+      "id": "b6ae2cc0-3b30-4401-acbe-0adf602c0853",
+      "name": "Error",
+      "webhookId": "d2a8e95c-e282-4d04-9683-6026f2ac6f70",
+      "credentials": {
+        "telegramApi": {
+          "id": "SnPsAmIZbdEV4GZ8",
+          "name": "YT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://example.workers.dev/tg-autonews/All/{{ $('URL cleaning').item.json.mediaFileNames[0] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4464,
+        160
+      ],
+      "id": "754ab09d-839f-4370-96b0-0db6bcd2ae2b",
+      "name": "Get video"
+    },
+    {
+      "parameters": {
+        "jsCode": "const channelUsername = $('Edit Fields').item.json.channel_name;\n\n\nconst allInputs = $input.all();\nconst finalResults = [];\n\nfor (const inputItem of allInputs) {\n  const messages = inputItem.json.messages || [];\n\n  const groupedMessages = new Map();\n\n  for (const message of messages) {\n\n    const groupId = message.grouped_id || message.id;\n\n\n    if (!groupedMessages.has(groupId)) {\n      groupedMessages.set(groupId, {\n        mainMessage: null, \n        mediaUrls: [],\n      });\n    }\n\n    const group = groupedMessages.get(groupId);\n\n    if (message.video) {\n      group.mediaUrls.push(message.video);\n    }\n    if (message.photo) {\n      if (Array.isArray(message.photo)) {\n        group.mediaUrls.push(...message.photo);\n      } else {\n        group.mediaUrls.push(message.photo);\n      }\n    }\n\n\n    if (!group.mainMessage || message.html) {\n        group.mainMessage = message;\n    }\n  }\n\n\n  for (const group of groupedMessages.values()) {\n    const message = group.mainMessage;\n\n\n    if (!message) continue;\n\n    if (message.html && group.mediaUrls.length > 0) {\n      const postUrl = `https://t.me/${channelUsername}/${message.id}`;\n      const publishedAt = new Date(message.date * 1000).toLocaleString('ru-RU', {\n        year: 'numeric',\n        month: 'long',\n        day: 'numeric',\n        hour: '2-digit',\n        minute: '2-digit'\n      });\n      const summary = message.html || '';\n\n      let reactionsString = '';\n      if (message.reactions && message.reactions.results) {\n        const reactionParts = message.reactions.results\n          .filter(r => r.reaction && r.reaction.emoticon)\n          .map(r => `${r.reaction.emoticon} ${r.count}`);\n        reactionsString = reactionParts.join(', ');\n      }\n      \n      finalResults.push({\n        json: {\n          postUrl: postUrl,\n          publishedAt: publishedAt,\n          summary: summary,\n          mediaUrls: group.mediaUrls,\n          reactions: reactionsString,\n          views: message.views,\n          forwards: message.forwards,\n        }\n      });\n    }\n  }\n}\n\nreturn finalResults;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        224
+      ],
+      "id": "efbf1641-8008-40e7-9ddf-4f9bfb03866c",
+      "name": "Group"
+    },
+    {
+      "parameters": {
+        "jsCode": "const resultItems = [];\n\nfor (const item of items) {\n  const json = item.json;\n\n\n  if (json.mediaUrls && Array.isArray(json.mediaUrls)) {\n\n    const mediaFileNames = json.mediaUrls.map(url => {\n      return url.split('/').pop();\n    });\n    \n    json.mediaFileNames = mediaFileNames;\n  }\n\n  resultItems.push({\n    json: json\n  });\n}\n\nreturn resultItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        96
+      ],
+      "id": "03e70d7d-7383-49f8-98f6-d15d15a6863c",
+      "name": "URL cleaning"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst items = $input.all();\n\nfor (const item of items) {\n  const data = item.json;\n\n\n  try {\n    if (typeof data.videos === 'string') {\n      data.videos = JSON.parse(data.videos);\n    }\n    if (typeof data.resources === 'string') {\n      data.resources = JSON.parse(data.resources);\n    }\n    if (typeof data.images === 'string') {\n      data.images = JSON.parse(data.images);\n    }\n  } catch (error) {\n\n    if (!Array.isArray(data.videos)) data.videos = [];\n    if (!Array.isArray(data.resources)) data.resources = [];\n    if (!Array.isArray(data.images)) data.images = [];\n  }\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3344,
+        96
+      ],
+      "id": "1bc8d3ff-9baa-4568-a96b-d47e94522748",
+      "name": "Data sanitization"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Loop Over Items3": {
+      "main": [
+        [],
+        [
+          {
+            "node": "URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row3": {
+      "main": [
+        [
+          {
+            "node": "Get a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row1": {
+      "main": [
+        [
+          {
+            "node": "Data sanitization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get tmp file": {
+      "main": [
+        [
+          {
+            "node": "Save to storage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3s": {
+      "main": [
+        [
+          {
+            "node": "Create preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG Parser": {
+      "main": [
+        [
+          {
+            "node": "Group",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "60s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a photo message": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a video": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "URL cleaning",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL": {
+      "main": [
+        [
+          {
+            "node": "URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URLs": {
+      "main": [
+        [
+          {
+            "node": "Advanced filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "TG Parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "60s": {
+      "main": [
+        [
+          {
+            "node": "TG Parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Advanced filter": {
+      "main": [
+        [
+          {
+            "node": "Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to storage": {
+      "main": [
+        [
+          {
+            "node": "Create a row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create preview": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "3s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get video": {
+      "main": [
+        [
+          {
+            "node": "Send a video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Group": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL cleaning": {
+      "main": [
+        [
+          {
+            "node": "Get tmp file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data sanitization": {
+      "main": [
+        [
+          {
+            "node": "Create preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b2bc0d1c-434e-4037-8d00-930c5598e62f",
+  "meta": {
+    "instanceId": "ba11b2825d3e379606d94cf5040fe1f575a23b6e6b8cfb66c708c61b412a8c3e"
+  },
+  "id": "PMVdQiHrrOVGFqcl",
+  "tags": []
+}

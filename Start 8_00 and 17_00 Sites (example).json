@@ -1,0 +1,355 @@
+{
+  "name": "Start 8:00 and 17:00 Sites (example)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            },
+            {
+              "triggerAtHour": 17
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -832,
+        592
+      ],
+      "id": "fca555fa-bb60-4c7f-865c-65bbd59d2bb5",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "bDM9b9eHnkwp9cD7",
+          "mode": "list",
+          "cachedResultName": "Parsing AI Magazine"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e290add3-1e30-4fc7-875c-b032c20c35b8",
+      "name": "AI Magazine"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "OOMfOkygyISJTcmW",
+          "mode": "list",
+          "cachedResultName": "Parsing AI News"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        160
+      ],
+      "id": "f6bde50f-32d7-42e6-b310-50ea6f090b4a",
+      "name": "AI News"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Jj9YlPam6CRgp5RU",
+          "mode": "list",
+          "cachedResultName": "Parsing DeepMind"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        320
+      ],
+      "id": "53102dd6-681c-4ffd-85a7-7e9baf9b834d",
+      "name": "DeepMind"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "PTFod46eFXmEj0Pt",
+          "mode": "list",
+          "cachedResultName": "Parsing ITC"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        480
+      ],
+      "id": "761fd252-7c75-453d-8851-a3f81752a5ec",
+      "name": "ITC"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "M6ebaJUJDsEPTRsh",
+          "mode": "list",
+          "cachedResultName": "Parsing NextWeb"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        624
+      ],
+      "id": "ea761d8d-3737-44be-ae2f-d82e26837fe1",
+      "name": "NextWeb"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "0aDhFC7I8UH9FBop",
+          "mode": "list",
+          "cachedResultName": "Parsing TechCrunсh"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        768
+      ],
+      "id": "b1a66fcb-3051-43c5-aa44-7ca8d70a7927",
+      "name": "TechCrunch"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "9a3tCXfwBYPZCEDV",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/9a3tCXfwBYPZCEDV",
+          "cachedResultName": "Parsing Deeplearning"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        928
+      ],
+      "id": "16a69d32-5fad-4724-a506-e7e854826927",
+      "name": "Deeplearning"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "wEgSh2DmCJKzn8LS",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/wEgSh2DmCJKzn8LS",
+          "cachedResultName": "Parsing Startups"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        1104
+      ],
+      "id": "a4e4e712-63be-4ea0-8b74-d8b12d394a7a",
+      "name": "Startups"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "9lJ9MmMgqZWbCRx4",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/9lJ9MmMgqZWbCRx4",
+          "cachedResultName": "Parsing MIT"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        1280
+      ],
+      "id": "82c206f7-dd9d-4a0b-b2e9-cda7172aad7a",
+      "name": "MIT"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Magazine",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI News",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "DeepMind",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "ITC",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "NextWeb",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TechCrunch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Deeplearning",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Startups",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MIT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a37f7103-c8a1-4d72-8128-937ca8fb09cc",
+  "meta": {
+    "instanceId": "ba11b2825d3e379606d94cf5040fe1f575a23b6e6b8cfb66c708c61b412a8c3e"
+  },
+  "id": "3wkoaCmXERS2tK3o",
+  "tags": []
+}

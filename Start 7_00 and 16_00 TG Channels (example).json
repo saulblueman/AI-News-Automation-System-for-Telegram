@@ -1,0 +1,217 @@
+{
+  "name": "Start 7:00 and 16:00 TG Channels (example)",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "CwdFTW2bjqeGnDmW",
+          "mode": "list",
+          "cachedResultName": "TG - AIStories"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        768,
+        768
+      ],
+      "id": "95440307-bdf2-4aff-b717-b1623113b2d6",
+      "name": "AIStories"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "YhaWEkhjvwokiRio",
+          "mode": "list",
+          "cachedResultName": "TG - GPTNews"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        768,
+        944
+      ],
+      "id": "8311a90f-8719-4f7d-9da0-59f5d43eb898",
+      "name": "GPTNews"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "nK0VxcXvZ0znL5vH",
+          "mode": "list",
+          "cachedResultName": "TG-Creaitors"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        768,
+        1264
+      ],
+      "id": "3b472f57-4fee-4be0-ae3d-edfcf2367596",
+      "name": "Creaitors"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Vep54tSI5hZvDcMr",
+          "mode": "list",
+          "cachedResultName": "TG - gptua"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        768,
+        1104
+      ],
+      "id": "b0576bf6-e907-4e0e-8c3d-1d1c464d6a64",
+      "name": "gptua"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "7aac1LEhK0mnnYUo",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/7aac1LEhK0mnnYUo",
+          "cachedResultName": "TG - MAKE AI"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        768,
+        1440
+      ],
+      "id": "e9de4f9f-5e5e-45df-88a3-0df8006761a4",
+      "name": "MAKE AI"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            },
+            {
+              "triggerAtHour": 16
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        1008
+      ],
+      "id": "1809363d-2109-422d-b2e0-35e86d00f020",
+      "name": "Schedule Trigger1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "AIStories",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GPTNews",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "gptua",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Creaitors",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MAKE AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b7faec05-535c-4d9d-b4ef-b4d894f74466",
+  "meta": {
+    "instanceId": "ba11b2825d3e379606d94cf5040fe1f575a23b6e6b8cfb66c708c61b412a8c3e"
+  },
+  "id": "l40qGWV6cYjUhyNU",
+  "tags": []
+}
