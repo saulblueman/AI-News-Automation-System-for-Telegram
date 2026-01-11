@@ -358,16 +358,7 @@ To support multiple languages simultaneously:
 - Workflows include error outputs - monitor workspace channel
 - Failed posts send error notifications
 - Retry logic built into critical nodes
-
-## 🤝 Contributing
-
-Contributions welcome! Areas for improvement:
-- Additional source parsers
-- Advanced AI model integration
-- Enhanced duplicate detection
-- Multi-language support improvements
-- Analytics dashboard
-- Custom Worker features
+  
 
 ## 💡 Use Cases
 
@@ -380,31 +371,7 @@ Contributions welcome! Areas for improvement:
 - Multi-language news distribution
 - Automated content translation
 
-## 🆘 Troubleshooting
-
-### Media not displaying
-- Check Worker deployment and URL
-- Verify S3 credentials in Worker environment variables
-- Ensure bucket permissions allow Worker access
-- Test Worker URL directly in browser
-
-### Telegraph pages not creating
-- Verify Telegraph API token is valid
-- Check token hasn't been revoked
-- Create new token if needed
-- Ensure Telegraph API calls include correct token
-
-### Posts in wrong language
-- Review all AI model system prompts
-- Check locale settings in Code nodes
-- Verify language instructions in prompts
-- Test with single post before batch processing
-
-### Direct forwarding not working
-- Ensure bot receives forwarded messages permission
-- Check RapidAPI quota and credentials
-- Verify channel username extraction logic
-- Test with public channels first
+## Contributions welcome! 
 
 ---
 
